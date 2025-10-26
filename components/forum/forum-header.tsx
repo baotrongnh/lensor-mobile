@@ -1,11 +1,15 @@
-import React from 'react'
-import { View, StyleSheet, Pressable } from 'react-native'
-import { ThemedText } from '../themed-text'
-import { Ionicons } from '@expo/vector-icons'
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
+import { Ionicons } from '@expo/vector-icons'
+import React from 'react'
+import { Pressable, StyleSheet, View } from 'react-native'
+import { ThemedText } from '../themed-text'
 
-export default function ForumHeader() {
+interface ForumHeaderProps {
+     onCreatePress?: () => void
+}
+
+export default function ForumHeader({ onCreatePress }: ForumHeaderProps) {
      const colorScheme = useColorScheme()
      const colors = Colors[colorScheme ?? 'light']
 
@@ -13,11 +17,8 @@ export default function ForumHeader() {
           <View style={[styles.container, { backgroundColor: colors.background, borderBottomColor: colors.icon + '20' }]}>
                <ThemedText style={styles.logo}>Lensor</ThemedText>
                <View style={styles.actions}>
-                    <Pressable style={styles.iconBtn}>
+                    <Pressable style={styles.iconBtn} onPress={onCreatePress}>
                          <Ionicons name="add-circle-outline" size={28} color={colors.text} />
-                    </Pressable>
-                    <Pressable style={styles.iconBtn}>
-                         <Ionicons name="heart-outline" size={28} color={colors.text} />
                     </Pressable>
                     <Pressable style={styles.iconBtn}>
                          <Ionicons name="chatbubble-ellipses-outline" size={26} color={colors.text} />
