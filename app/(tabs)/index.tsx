@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import PostItem from '@/components/forum/post-item'
 import ForumHeader from '@/components/forum/forum-header'
 import CreatePostModal from '@/components/forum/create-post-modal'
+import CommentModal from '@/components/forum/comment-modal'
 import { MOCK_POSTS, Post } from '@/constants/mock-data'
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
@@ -12,14 +13,17 @@ export default function ForumScreen() {
   const colorScheme = useColorScheme()
   const colors = Colors[colorScheme ?? 'light']
   const [posts] = useState<Post[]>(MOCK_POSTS)
-  const [modalVisible, setModalVisible] = useState(false)
+  const [createModalVisible, setCreateModalVisible] = useState(false)
+  const [commentModalVisible, setCommentModalVisible] = useState(false)
+  const [selectedPostId, setSelectedPostId] = useState<string>('')
 
   const handleLike = (postId: string) => {
     console.log('Liked post:', postId)
   }
 
   const handleComment = (postId: string) => {
-    console.log('Comment on post:', postId)
+    setSelectedPostId(postId)
+    setCommentModalVisible(true)
   }
 
   const handleShare = (postId: string) => {
@@ -42,7 +46,7 @@ export default function ForumScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
-      <ForumHeader onCreatePress={() => setModalVisible(true)} />
+      <ForumHeader onCreatePress={() => setCreateModalVisible(true)} />
       <FlatList
         data={posts}
         renderItem={renderPost}
@@ -52,9 +56,15 @@ export default function ForumScreen() {
       />
 
       <CreatePostModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
+        visible={createModalVisible}
+        onClose={() => setCreateModalVisible(false)}
         onPostCreated={handlePostCreated}
+      />
+
+      <CommentModal
+        visible={commentModalVisible}
+        onClose={() => setCommentModalVisible(false)}
+        postId={selectedPostId}
       />
     </SafeAreaView>
   )
