@@ -5,6 +5,8 @@ import PostItem from '@/components/forum/post-item'
 import ForumHeader from '@/components/forum/forum-header'
 import CreatePostModal from '@/components/forum/create-post-modal'
 import CommentModal from '@/components/forum/comment-modal'
+import NotificationModal from '@/components/forum/notification-modal'
+import ChatModal from '@/components/forum/chat-modal'
 import { MOCK_POSTS, Post } from '@/constants/mock-data'
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
@@ -15,6 +17,8 @@ export default function ForumScreen() {
   const [posts] = useState<Post[]>(MOCK_POSTS)
   const [createModalVisible, setCreateModalVisible] = useState(false)
   const [commentModalVisible, setCommentModalVisible] = useState(false)
+  const [notificationModalVisible, setNotificationModalVisible] = useState(false)
+  const [chatModalVisible, setChatModalVisible] = useState(false)
   const [selectedPostId, setSelectedPostId] = useState<string>('')
 
   const handleLike = (postId: string) => {
@@ -46,7 +50,11 @@ export default function ForumScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
-      <ForumHeader onCreatePress={() => setCreateModalVisible(true)} />
+      <ForumHeader
+        onCreatePress={() => setCreateModalVisible(true)}
+        onNotificationPress={() => setNotificationModalVisible(true)}
+        onChatPress={() => setChatModalVisible(true)}
+      />
       <FlatList
         data={posts}
         renderItem={renderPost}
@@ -65,6 +73,16 @@ export default function ForumScreen() {
         visible={commentModalVisible}
         onClose={() => setCommentModalVisible(false)}
         postId={selectedPostId}
+      />
+
+      <NotificationModal
+        visible={notificationModalVisible}
+        onClose={() => setNotificationModalVisible(false)}
+      />
+
+      <ChatModal
+        visible={chatModalVisible}
+        onClose={() => setChatModalVisible(false)}
       />
     </SafeAreaView>
   )
