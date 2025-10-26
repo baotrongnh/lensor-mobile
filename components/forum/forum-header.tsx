@@ -7,9 +7,11 @@ import { ThemedText } from '../themed-text'
 
 interface ForumHeaderProps {
      onCreatePress?: () => void
+     onNotificationPress?: () => void
+     onChatPress?: () => void
 }
 
-export default function ForumHeader({ onCreatePress }: ForumHeaderProps) {
+export default function ForumHeader({ onCreatePress, onNotificationPress, onChatPress }: ForumHeaderProps) {
      const colorScheme = useColorScheme()
      const colors = Colors[colorScheme ?? 'light']
 
@@ -20,7 +22,10 @@ export default function ForumHeader({ onCreatePress }: ForumHeaderProps) {
                     <Pressable style={styles.iconBtn} onPress={onCreatePress}>
                          <Ionicons name="add-circle-outline" size={28} color={colors.text} />
                     </Pressable>
-                    <Pressable style={styles.iconBtn}>
+                    <Pressable style={styles.iconBtn} onPress={onNotificationPress}>
+                         <Ionicons name="notifications-outline" size={26} color={colors.text} />
+                    </Pressable>
+                    <Pressable style={styles.iconBtn} onPress={onChatPress}>
                          <Ionicons name="chatbubble-ellipses-outline" size={26} color={colors.text} />
                     </Pressable>
                </View>

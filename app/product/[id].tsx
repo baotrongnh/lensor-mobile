@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
 import { StyleSheet, ScrollView, View, Pressable, Dimensions } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { useLocalSearchParams, router } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router'
 import { Image } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
 import { ThemedText } from '@/components/themed-text'
+import ImageCompare from '@/components/marketplace/image-compare'
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { MARKETPLACE_PRODUCTS } from '@/constants/marketplace-data'
@@ -102,6 +103,17 @@ export default function ProductDetailScreen() {
                          <View style={styles.section}>
                               <ThemedText style={styles.sectionTitle}>Description</ThemedText>
                               <ThemedText style={[styles.description, { color: colors.textSecondary }]}>{product.description}</ThemedText>
+                         </View>
+
+                         {/* Before/After Comparison */}
+                         <View style={styles.section}>
+                              <ThemedText style={styles.sectionTitle}>Before & After</ThemedText>
+                              <ImageCompare
+                                   beforeImage={images[0]}
+                                   afterImage={images[1] || images[0]}
+                                   width={width - 32}
+                                   height={300}
+                              />
                          </View>
 
                          {/* Features */}
