@@ -15,7 +15,6 @@ import { Ionicons } from '@expo/vector-icons'
 import * as ImagePicker from 'expo-image-picker'
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
-import { postApi } from '@/lib/apis/postApi'
 
 interface CreatePostModalProps {
      visible: boolean
@@ -80,7 +79,7 @@ export default function CreatePostModal({ visible, onClose, onPostCreated }: Cre
                     } as any)
                }
 
-               await postApi.create(formData)
+               //CALL CREATE
 
                Alert.alert('Success', 'Post created!')
                setCaption('')
