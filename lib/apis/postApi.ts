@@ -10,5 +10,11 @@ export const postApi = {
      getById: async (id: string) => {
           const res = await apiClient.get(endpoints.post.byId(id))
           return res.data
+     },
+
+     create: async (payload: FormData) => {
+          console.log(payload);
+          const res = await apiClient.post(endpoints.post.all, payload)
+          return res.data
      }
 }

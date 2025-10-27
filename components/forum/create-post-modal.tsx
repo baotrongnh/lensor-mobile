@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons'
 import * as ImagePicker from 'expo-image-picker'
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
+import { postApi } from '@/lib/apis/postApi'
 
 interface CreatePostModalProps {
      visible: boolean
@@ -65,7 +66,8 @@ export default function CreatePostModal({ visible, onClose, onPostCreated }: Cre
 
           try {
                const formData = new FormData()
-               formData.append('caption', caption)
+               formData.append('title', 'Title test')
+               formData.append('content', caption)
 
                if (image) {
                     const filename = image.split('/').pop() || 'photo.jpg'
@@ -79,7 +81,7 @@ export default function CreatePostModal({ visible, onClose, onPostCreated }: Cre
                     } as any)
                }
 
-               //CALL CREATE
+               await postApi.create(formData)
 
                Alert.alert('Success', 'Post created!')
                setCaption('')
