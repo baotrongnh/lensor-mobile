@@ -3,13 +3,14 @@ import React, { useState } from 'react'
 import { StyleSheet, View, Pressable } from 'react-native'
 import { ThemedText } from '../themed-text'
 import { Ionicons } from '@expo/vector-icons'
-import { Post } from '@/constants/mock-data'
 import { Colors } from '@/constants/theme'
 import ImageViewer from './image-viewer'
 import { useColorScheme } from '@/hooks/use-color-scheme'
+import { PostType } from '@/type/post'
+import { BASE_URL } from '@/constants'
 
 interface PostItemProps {
-     post: Post
+     post: PostType
      onLike?: (postId: string) => void
      onComment?: (postId: string) => void
      onShare?: (postId: string) => void
@@ -18,21 +19,21 @@ interface PostItemProps {
 export default function PostItem({ post, onLike, onComment, onShare }: PostItemProps) {
      const colorScheme = useColorScheme()
      const colors = Colors[colorScheme ?? 'light']
-     const [isLiked, setIsLiked] = useState(post.isLiked)
-     const [likesCount, setLikesCount] = useState(post.likes)
      const [showImageViewer, setShowImageViewer] = useState(false)
+     const [showFullCaption, setShowFullCaption] = useState(false)
 
-     const handleLike = () => {
-          setIsLiked(!isLiked)
-          setLikesCount(isLiked ? likesCount - 1 : likesCount + 1)
-          onLike?.(post.id)
-     }
+     const MAX_CAPTION_LENGTH = 100
 
      const formatNumber = (num: number) => {
           if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
           if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
-          return num.toString()
+          return num?.toString()
      }
+
+     const shouldTruncate = post?.content && post.content.length > MAX_CAPTION_LENGTH
+     const displayCaption = shouldTruncate && !showFullCaption
+          ? post.content?.slice(0, MAX_CAPTION_LENGTH)
+          : post?.content
 
      return (
           <View style={styles.postContainer}>
@@ -40,15 +41,15 @@ export default function PostItem({ post, onLike, onComment, onShare }: PostItemP
                <View style={styles.header}>
                     <View style={styles.userInfo}>
                          <Image
-                              source={post.user.avatar}
+                              source={post?.user.avatarUrl}
                               style={styles.avatar}
                               transition={300}
                               contentFit='cover'
                          />
                          <View>
-                              <ThemedText style={styles.username}>{post.user.username}</ThemedText>
+                              <ThemedText style={styles.username}>{post?.user.name}</ThemedText>
                               <ThemedText style={[styles.timeAgo, { color: colors.textSecondary }]}>
-                                   {post.timeAgo}
+                                   {post.createdAt}
                               </ThemedText>
                          </View>
                     </View>
@@ -60,7 +61,7 @@ export default function PostItem({ post, onLike, onComment, onShare }: PostItemP
                {/* Image */}
                <Pressable onPress={() => setShowImageViewer(true)}>
                     <Image
-                         source={post.image}
+                         source={`${BASE_URL}${post?.imageUrl}`}
                          style={styles.postImg}
                          transition={500}
                          contentFit='cover'
@@ -70,11 +71,11 @@ export default function PostItem({ post, onLike, onComment, onShare }: PostItemP
                {/* Actions */}
                <View style={styles.actions}>
                     <View style={styles.leftActions}>
-                         <Pressable onPress={handleLike} style={styles.actionBtn}>
+                         <Pressable style={styles.actionBtn}>
                               <Ionicons
-                                   name={isLiked ? "heart" : "heart-outline"}
+                                   name={true ? "heart" : "heart-outline"}
                                    size={28}
-                                   color={isLiked ? "#FF3B30" : colors.text}
+                                   color={true ? "#FF3B30" : colors.text}
                               />
                          </Pressable>
                          <Pressable onPress={() => onComment?.(post.id)} style={styles.actionBtn}>
@@ -92,16 +93,28 @@ export default function PostItem({ post, onLike, onComment, onShare }: PostItemP
                {/* Likes & Caption */}
                <View style={styles.content}>
                     <ThemedText style={styles.likes}>
-                         {formatNumber(likesCount)} likes
+                         {formatNumber(post?.voteCount)} likes
                     </ThemedText>
-                    <View style={styles.captionRow}>
-                         <ThemedText style={styles.username}>{post.user.username}</ThemedText>
-                         <ThemedText style={styles.caption}> {post.caption}</ThemedText>
-                    </View>
-                    {post.comments > 0 && (
+                    {post?.content && (
+                         <View style={styles.captionContainer}>
+                              <ThemedText style={styles.caption}>
+                                   <ThemedText style={styles.username}>{post?.user.name} </ThemedText>
+                                   {displayCaption}
+                                   {shouldTruncate && !showFullCaption && '... '}
+                              </ThemedText>
+                              {shouldTruncate && (
+                                   <Pressable onPress={() => setShowFullCaption(!showFullCaption)}>
+                                        <ThemedText style={[styles.showMore, { color: colors.textSecondary }]}>
+                                             {showFullCaption ? 'Show less' : 'Show more'}
+                                        </ThemedText>
+                                   </Pressable>
+                              )}
+                         </View>
+                    )}
+                    {post?.commentCount > 0 && (
                          <Pressable onPress={() => onComment?.(post.id)}>
                               <ThemedText style={[styles.viewComments, { color: colors.textSecondary }]}>
-                                   View all {post.comments} comments
+                                   View all {post?.commentCount} comments
                               </ThemedText>
                          </Pressable>
                     )}
@@ -110,10 +123,10 @@ export default function PostItem({ post, onLike, onComment, onShare }: PostItemP
                {/* Image Viewer Modal */}
                <ImageViewer
                     visible={showImageViewer}
-                    imageUrl={post.image}
+                    imageUrl={`${BASE_URL}${post?.imageUrl}`}
                     onClose={() => setShowImageViewer(false)}
-                    username={post.user.username}
-                    caption={post.caption}
+                    username={post?.user.name}
+                    caption={post?.content}
                />
           </View>
      )
@@ -173,12 +186,16 @@ const styles = StyleSheet.create({
           fontSize: 14,
           fontWeight: '600',
      },
-     captionRow: {
-          flexDirection: 'row',
-          flexWrap: 'wrap',
+     captionContainer: {
+          gap: 2,
      },
      caption: {
           fontSize: 14,
+          lineHeight: 18,
+     },
+     showMore: {
+          fontSize: 14,
+          marginTop: 2,
      },
      viewComments: {
           fontSize: 14,

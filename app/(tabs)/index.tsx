@@ -1,25 +1,26 @@
-import React, { useState } from 'react'
-import { StyleSheet, FlatList } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import PostItem from '@/components/forum/post-item'
-import ForumHeader from '@/components/forum/forum-header'
-import CreatePostModal from '@/components/forum/create-post-modal'
-import CommentModal from '@/components/forum/comment-modal'
-import NotificationModal from '@/components/forum/notification-modal'
 import ChatModal from '@/components/forum/chat-modal'
-import { MOCK_POSTS, Post } from '@/constants/mock-data'
+import CommentModal from '@/components/forum/comment-modal'
+import CreatePostModal from '@/components/forum/create-post-modal'
+import ForumHeader from '@/components/forum/forum-header'
+import NotificationModal from '@/components/forum/notification-modal'
+import PostItem from '@/components/forum/post-item'
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
+import { usePosts } from '@/lib/hooks/usePostHooks'
+import React, { useState } from 'react'
+import { FlatList, StyleSheet } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function ForumScreen() {
   const colorScheme = useColorScheme()
   const colors = Colors[colorScheme ?? 'light']
-  const [posts] = useState<Post[]>(MOCK_POSTS)
   const [createModalVisible, setCreateModalVisible] = useState(false)
   const [commentModalVisible, setCommentModalVisible] = useState(false)
   const [notificationModalVisible, setNotificationModalVisible] = useState(false)
   const [chatModalVisible, setChatModalVisible] = useState(false)
   const [selectedPostId, setSelectedPostId] = useState<string>('')
+
+  const { data: posts } = usePosts()
 
   const handleLike = (postId: string) => {
     console.log('Liked post:', postId)
@@ -39,7 +40,7 @@ export default function ForumScreen() {
     // TODO: Refresh posts
   }
 
-  const renderPost = ({ item }: { item: Post }) => (
+  const renderPost = ({ item }: { item: any }) => (
     <PostItem
       post={item}
       onLike={handleLike}
@@ -55,8 +56,9 @@ export default function ForumScreen() {
         onNotificationPress={() => setNotificationModalVisible(true)}
         onChatPress={() => setChatModalVisible(true)}
       />
+
       <FlatList
-        data={posts}
+        data={posts?.data}
         renderItem={renderPost}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
