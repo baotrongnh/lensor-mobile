@@ -16,6 +16,8 @@ function RootLayoutNav() {
     <ThemeProvider value={currentTheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="cart/index" options={{ headerShown: false }} />
         <Stack.Screen name="product/[id]" options={{ headerBackButtonDisplayMode: 'minimal', title: "Product Detail" }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>

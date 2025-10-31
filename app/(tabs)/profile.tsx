@@ -142,4 +142,34 @@ const styles = StyleSheet.create({
      emptyText: {
           fontSize: 15,
      },
+     loginPrompt: {
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 32,
+     },
+     loginTitle: {
+          fontSize: 28,
+          fontWeight: '700',
+          marginBottom: 12,
+          textAlign: 'center',
+     },
+     loginSubtitle: {
+          fontSize: 16,
+          textAlign: 'center',
+          marginBottom: 32,
+          lineHeight: 24,
+     },
+     loginButton: {
+          paddingHorizontal: 32,
+          paddingVertical: 16,
+          borderRadius: 12,
+          minWidth: 200,
+          alignItems: 'center',
+     },
+     loginButtonText: {
+          color: '#fff',
+          fontSize: 16,
+          fontWeight: '700',
+     },
 })

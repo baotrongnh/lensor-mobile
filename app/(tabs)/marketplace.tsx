@@ -1,12 +1,14 @@
 import React, { useState } from 'react'
-import { StyleSheet, FlatList, View, TextInput, Pressable } from 'react-native'
+import { StyleSheet, FlatList, View, TextInput, Pressable, ActivityIndicator } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { router } from 'expo-router'
 import { ThemedText } from '@/components/themed-text'
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
-import { MARKETPLACE_PRODUCTS } from '@/constants/marketplace-data'
 import ProductCard from '@/components/marketplace/product-card'
 import { Ionicons } from '@expo/vector-icons'
+import { useMarketplace } from '@/lib/hooks/useMarketplaceHooks'
+import { MarketplaceItem } from '@/type/marketplace'
 
 export default function MarketplaceScreen() {
   const colorScheme = useColorScheme()
@@ -14,7 +16,10 @@ export default function MarketplaceScreen() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'lightroom' | 'photoshop'>('all')
 
-  const filteredProducts = MARKETPLACE_PRODUCTS.filter((product) => {
+  const { data, isLoading } = useMarketplace()
+  const products: MarketplaceItem[] = data?.data || []
+
+  const filteredProducts = products.filter((product) => {
     const matchesSearch =
       product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -22,6 +27,16 @@ export default function MarketplaceScreen() {
     const matchesFilter = selectedFilter === 'all' || product.software === selectedFilter
     return matchesSearch && matchesFilter
   })
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+        <View style={styles.loading}>
+          <ActivityIndicator size="large" color={colors.tint} />
+        </View>
+      </SafeAreaView>
+    )
+  }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
@@ -31,10 +46,16 @@ export default function MarketplaceScreen() {
         keyExtractor={(item) => item.id.toString()}
         ListHeaderComponent={() => (
           <View style={styles.header}>
-            <View style={styles.titleContainer}>
-              <ThemedText style={styles.title}>Your </ThemedText>
-              <ThemedText style={[styles.title, { color: colors.tint }]}>Marketplace </ThemedText>
-              <ThemedText style={styles.title}>for Creativity</ThemedText>
+            <View style={styles.titleRow}>
+              <View style={styles.titleContainer}>
+                <ThemedText style={styles.title}>Your </ThemedText>
+                <ThemedText style={[styles.title, { color: colors.tint }]}>Marketplace </ThemedText>
+                <ThemedText style={styles.title}>for Creativity</ThemedText>
+              </View>
+              <Pressable style={styles.cartButton} onPress={() => router.push('/cart' as any)}>
+                <Ionicons name="cart-outline" size={24} color={colors.text} />
+                {/* TODO: Add badge for cart item count */}
+              </Pressable>
             </View>
             <ThemedText style={[styles.subtitle, { color: colors.textSecondary }]}>
               Buy and showcase stunning presets
@@ -92,16 +113,31 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  loading: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   list: {
     padding: 16,
   },
   header: {
     marginBottom: 20,
   },
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
   titleContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginBottom: 8,
+    flex: 1,
+  },
+  cartButton: {
+    padding: 8,
+    marginTop: -4,
   },
   title: {
     fontSize: 28,

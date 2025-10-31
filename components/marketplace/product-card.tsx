@@ -5,11 +5,13 @@ import { Ionicons } from '@expo/vector-icons'
 import { ThemedText } from '@/components/themed-text'
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
-import { MarketplaceProduct } from '@/constants/marketplace-data'
+import { MarketplaceItem } from '@/type/marketplace'
 import { router } from 'expo-router'
 
+const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://14.169.52.232:3005'
+
 interface ProductCardProps {
-     product: MarketplaceProduct
+     product: MarketplaceItem
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
@@ -25,29 +27,27 @@ export default function ProductCard({ product }: ProductCardProps) {
                style={[styles.card, { backgroundColor: colorScheme === 'dark' ? '#1a1a1a' : '#f9f9f9' }]}
                onPress={handlePress}
           >
-               {/* Image with gradient overlay */}
                <View style={styles.imageContainer}>
                     <Image
-                         source={{ uri: product.image }}
+                         source={{ uri: `${BASE_URL}${product.thumbnail}` }}
                          style={styles.image}
                          contentFit="cover"
                          transition={300}
                     />
                     <View style={styles.gradientOverlay} />
 
-                    {/* Price badge */}
                     <View style={[styles.priceBadge, { backgroundColor: colors.tint }]}>
                          <ThemedText style={styles.priceText}>${product.price}</ThemedText>
                     </View>
 
-                    {/* Rating */}
-                    <View style={[styles.ratingBadge, { backgroundColor: 'rgba(0,0,0,0.7)' }]}>
-                         <Ionicons name="star" size={14} color="#FFD700" />
-                         <ThemedText style={styles.ratingText}>{product.rating}</ThemedText>
-                    </View>
+                    {product.rating && (
+                         <View style={[styles.ratingBadge, { backgroundColor: 'rgba(0,0,0,0.7)' }]}>
+                              <Ionicons name="star" size={14} color="#FFD700" />
+                              <ThemedText style={styles.ratingText}>{product.rating}</ThemedText>
+                         </View>
+                    )}
                </View>
 
-               {/* Info */}
                <View style={styles.info}>
                     <ThemedText style={styles.title} numberOfLines={2}>
                          {product.title}
@@ -56,9 +56,8 @@ export default function ProductCard({ product }: ProductCardProps) {
                          {product.description}
                     </ThemedText>
 
-                    {/* Author */}
                     <View style={styles.author}>
-                         <Image source={{ uri: product.author.avatar }} style={styles.avatar} />
+                         <Image source={{ uri: `${BASE_URL}${product.author.avatar}` }} style={styles.avatar} />
                          <ThemedText style={[styles.authorName, { color: colors.textSecondary }]} numberOfLines={1}>
                               {product.author.name}
                          </ThemedText>

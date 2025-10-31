@@ -11,6 +11,7 @@ interface ImageCompareProps {
 }
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
+const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://14.169.52.232:3005'
 
 export default function ImageCompare({
      beforeImage,
@@ -41,11 +42,11 @@ export default function ImageCompare({
      return (
           <View style={[styles.container, { width, height }]}>
                {/* After Image (Background) */}
-               <Image source={afterImage} style={styles.image} contentFit="cover" />
+               <Image source={{ uri: `${BASE_URL}${afterImage}` }} style={styles.image} contentFit="cover" />
 
                {/* Before Image (Masked) */}
                <View style={[styles.beforeContainer, { width: sliderPosition }]}>
-                    <Image source={beforeImage} style={[styles.image, { width }]} contentFit="cover" />
+                    <Image source={{ uri: `${BASE_URL}${beforeImage}` }} style={[styles.image, { width }]} contentFit="cover" />
                </View>
 
                {/* Slider */}

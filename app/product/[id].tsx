@@ -1,39 +1,58 @@
-import React, { useState } from 'react'
-import { StyleSheet, ScrollView, View, Pressable, Dimensions } from 'react-native'
+import React from 'react'
+import { StyleSheet, ScrollView, View, Pressable, Dimensions, ActivityIndicator } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { useLocalSearchParams } from 'expo-router'
+import { useLocalSearchParams, router } from 'expo-router'
 import { Image } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
 import { ThemedText } from '@/components/themed-text'
 import ImageCompare from '@/components/marketplace/image-compare'
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
-import { MARKETPLACE_PRODUCTS } from '@/constants/marketplace-data'
+import { useMarketplaceDetail } from '@/lib/hooks/useMarketplaceHooks'
+import { ImagePair } from '@/type/marketplace'
 
 const { width } = Dimensions.get('window')
+const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://14.169.52.232:3005'
 
 export default function ProductDetailScreen() {
      const { id } = useLocalSearchParams()
      const colorScheme = useColorScheme()
      const colors = Colors[colorScheme ?? 'light']
-     const [selectedImageIndex, setSelectedImageIndex] = useState(0)
 
-     const product = MARKETPLACE_PRODUCTS.find((p) => p.id === Number(id))
+     console.log('🏠 ProductDetailScreen - Received ID:', id)
+     const { data: product, isLoading, error } = useMarketplaceDetail(id as string)
+     console.log('🏠 ProductDetailScreen - product:', product)
+     console.log('🏠 ProductDetailScreen - isLoading:', isLoading)
+     console.log('🏠 ProductDetailScreen - error:', error)
+
+     if (isLoading) {
+          return (
+               <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+                    <View style={styles.loading}>
+                         <ActivityIndicator size="large" color={colors.tint} />
+                    </View>
+               </SafeAreaView>
+          )
+     }
 
      if (!product) {
           return (
                <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
                     <ThemedText>Product not found</ThemedText>
+                    <ThemedText style={{ marginTop: 10, fontSize: 12 }}>ID: {id}</ThemedText>
+                    <ThemedText style={{ marginTop: 10, fontSize: 12 }}>Error: {JSON.stringify(error)}</ThemedText>
                </SafeAreaView>
           )
      }
 
-     const images = product.images || [product.image]
+     const imagePairs = product.imagePairs || []
 
      return (
           <View style={[styles.container, { backgroundColor: colors.background }]}>
-               {/* Header */}
                <View style={[styles.header, { borderBottomColor: colorScheme === 'dark' ? '#2a2a2a' : '#e5e7eb' }]}>
+                    <Pressable style={styles.backButton} onPress={() => router.back()}>
+                         <Ionicons name="arrow-back" size={24} color={colors.text} />
+                    </Pressable>
                     <ThemedText style={styles.headerTitle} numberOfLines={1}>
                          {product.title}
                     </ThemedText>
@@ -43,130 +62,81 @@ export default function ProductDetailScreen() {
                </View>
 
                <ScrollView showsVerticalScrollIndicator={false}>
-                    {/* Main Image */}
                     <View style={styles.imageContainer}>
-                         <Image source={{ uri: images[selectedImageIndex] }} style={styles.mainImage} contentFit="cover" />
+                         <Image source={{ uri: `${BASE_URL}${product.thumbnail}` }} style={styles.mainImage} contentFit="cover" />
                     </View>
 
-                    {/* Thumbnail Gallery */}
-                    {images.length > 1 && (
-                         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.thumbnailContainer}>
-                              {images.map((img, index) => (
-                                   <Pressable
-                                        key={index}
-                                        onPress={() => setSelectedImageIndex(index)}
-                                        style={[
-                                             styles.thumbnail,
-                                             {
-                                                  borderColor: selectedImageIndex === index ? colors.tint : 'transparent',
-                                             },
-                                        ]}
-                                   >
-                                        <Image source={{ uri: img }} style={styles.thumbnailImage} contentFit="cover" />
-                                   </Pressable>
-                              ))}
-                         </ScrollView>
-                    )}
-
-                    {/* Product Info */}
                     <View style={styles.content}>
-                         {/* Title and Author */}
                          <View style={styles.titleSection}>
                               <ThemedText style={styles.title}>{product.title}</ThemedText>
                               <View style={styles.authorRow}>
-                                   <Image source={{ uri: product.author.avatar }} style={styles.authorAvatar} />
+                                   <Image source={{ uri: `${BASE_URL}${product.author.avatar}` }} style={styles.authorAvatar} />
                                    <View style={{ flex: 1 }}>
                                         <ThemedText style={styles.authorName}>{product.author.name}</ThemedText>
-                                        <ThemedText style={[styles.category, { color: colors.textSecondary }]}>
-                                             {product.category}
-                                        </ThemedText>
+                                        {product.software && (
+                                             <ThemedText style={[styles.category, { color: colors.textSecondary }]}>
+                                                  {product.software}
+                                             </ThemedText>
+                                        )}
                                    </View>
                               </View>
                          </View>
 
-                         {/* Stats Row */}
-                         <View style={[styles.statsRow, { backgroundColor: colorScheme === 'dark' ? '#1a1a1a' : '#f9f9f9' }]}>
-                              <View style={styles.statItem}>
-                                   <Ionicons name="star" size={20} color="#FFD700" />
-                                   <ThemedText style={styles.statText}>
-                                        {product.rating} ({product.reviewCount || 0})
-                                   </ThemedText>
+                         {product.rating && (
+                              <View style={[styles.statsRow, { backgroundColor: colorScheme === 'dark' ? '#1a1a1a' : '#f9f9f9' }]}>
+                                   <View style={styles.statItem}>
+                                        <Ionicons name="star" size={20} color="#FFD700" />
+                                        <ThemedText style={styles.statText}>{product.rating}</ThemedText>
+                                   </View>
                               </View>
-                              <View style={styles.statDivider} />
-                              <View style={styles.statItem}>
-                                   <Ionicons name="download-outline" size={20} color={colors.tint} />
-                                   <ThemedText style={styles.statText}>{product.downloads || 0} sales</ThemedText>
-                              </View>
-                         </View>
+                         )}
 
-                         {/* Description */}
                          <View style={styles.section}>
                               <ThemedText style={styles.sectionTitle}>Description</ThemedText>
-                              <ThemedText style={[styles.description, { color: colors.textSecondary }]}>{product.description}</ThemedText>
+                              <ThemedText style={[styles.description, { color: colors.textSecondary }]}>
+                                   {product.description}
+                              </ThemedText>
                          </View>
 
-                         {/* Before/After Comparison */}
-                         <View style={styles.section}>
-                              <ThemedText style={styles.sectionTitle}>Before & After</ThemedText>
-                              <ImageCompare
-                                   beforeImage={images[0]}
-                                   afterImage={images[1] || images[0]}
-                                   width={width - 32}
-                                   height={300}
-                              />
-                         </View>
-
-                         {/* Features */}
-                         {product.features && (
+                         {imagePairs.length > 0 && (
                               <View style={styles.section}>
-                                   <ThemedText style={styles.sectionTitle}>Features</ThemedText>
-                                   {product.features.map((feature, index) => (
-                                        <View key={index} style={styles.featureRow}>
-                                             <Ionicons name="checkmark-circle" size={20} color={colors.tint} />
-                                             <ThemedText style={[styles.featureText, { color: colors.textSecondary }]}>{feature}</ThemedText>
+                                   <ThemedText style={styles.sectionTitle}>Before & After</ThemedText>
+                                   {imagePairs.map((pair: ImagePair, index: number) => (
+                                        <View key={index} style={{ marginBottom: 16 }}>
+                                             <ImageCompare
+                                                  beforeImage={pair.before}
+                                                  afterImage={pair.after}
+                                                  width={width - 32}
+                                                  height={300}
+                                             />
                                         </View>
                                    ))}
                               </View>
                          )}
 
-                         {/* Compatibility */}
-                         {product.compatibility && (
-                              <View style={styles.section}>
-                                   <ThemedText style={styles.sectionTitle}>Compatibility</ThemedText>
-                                   <View style={styles.chipContainer}>
-                                        {product.compatibility.map((item, index) => (
-                                             <View
-                                                  key={index}
-                                                  style={[styles.chip, { backgroundColor: colorScheme === 'dark' ? '#1a1a1a' : '#f5f5f5' }]}
-                                             >
-                                                  <ThemedText style={styles.chipText}>{item}</ThemedText>
-                                             </View>
-                                        ))}
+                         {product.presetFile && (
+                              <View style={[styles.fileInfo, { backgroundColor: colorScheme === 'dark' ? '#1a1a1a' : '#f9f9f9' }]}>
+                                   <View style={styles.fileInfoRow}>
+                                        <ThemedText style={[styles.fileInfoLabel, { color: colors.textSecondary }]}>
+                                             Format:
+                                        </ThemedText>
+                                        <ThemedText style={styles.fileInfoValue}>{product.presetFile.format}</ThemedText>
                                    </View>
+                                   {product.presetFile.fileSize && (
+                                        <View style={styles.fileInfoRow}>
+                                             <ThemedText style={[styles.fileInfoLabel, { color: colors.textSecondary }]}>
+                                                  File Size:
+                                             </ThemedText>
+                                             <ThemedText style={styles.fileInfoValue}>{product.presetFile.fileSize} MB</ThemedText>
+                                        </View>
+                                   )}
                               </View>
                          )}
-
-                         {/* File Info */}
-                         <View style={[styles.fileInfo, { backgroundColor: colorScheme === 'dark' ? '#1a1a1a' : '#f9f9f9' }]}>
-                              {product.fileFormat && (
-                                   <View style={styles.fileInfoRow}>
-                                        <ThemedText style={[styles.fileInfoLabel, { color: colors.textSecondary }]}>Format:</ThemedText>
-                                        <ThemedText style={styles.fileInfoValue}>{product.fileFormat}</ThemedText>
-                                   </View>
-                              )}
-                              {product.fileSize && (
-                                   <View style={styles.fileInfoRow}>
-                                        <ThemedText style={[styles.fileInfoLabel, { color: colors.textSecondary }]}>File Size:</ThemedText>
-                                        <ThemedText style={styles.fileInfoValue}>{product.fileSize}</ThemedText>
-                                   </View>
-                              )}
-                         </View>
 
                          <View style={{ height: 100 }} />
                     </View>
                </ScrollView>
 
-               {/* Bottom Bar */}
                <View
                     style={[
                          styles.bottomBar,
@@ -189,6 +159,11 @@ export default function ProductDetailScreen() {
 const styles = StyleSheet.create({
      container: {
           flex: 1,
+     },
+     loading: {
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
      },
      header: {
           flexDirection: 'row',

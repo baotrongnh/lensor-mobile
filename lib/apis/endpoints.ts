@@ -1,4 +1,4 @@
-const API_PREFIX = process.env.NEXT_PUBLIC_API_PREFIX || ''
+const API_PREFIX = '' // Empty vì baseURL đã có trong client.ts
 
 export const createEndpoints = (resource: string) => {
      return {
@@ -8,5 +8,8 @@ export const createEndpoints = (resource: string) => {
 }
 
 export const endpoints = {
-     post: createEndpoints('posts')
+     post: createEndpoints('posts'),
+     marketplace: createEndpoints('marketplaces'),
+     product: createEndpoints('products'),
+     forum: createEndpoints('forums')
 }
